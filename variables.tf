@@ -1,84 +1,84 @@
-variable "vm_libvirt_pool" {
+variable "libvirt_pool" {
   type    = string
   default = "default"
 }
 
-variable "vm_disk_passthroughs" {
+variable "disk_passthroughs" {
   type    = list(string)
   default = []
 }
 
-variable "vm_ssh_keys" {
+variable "ssh_keys" {
   type    = list(string)
   default = []
 }
 
-variable "vm_password_auth" {
+variable "password_auth" {
   type    = bool
   default = false
 }
 
-variable "vm_nameservers" {
+variable "nameservers" {
   type    = list(string)
   default = []
 }
 
-variable "vm_libvirt_external_interface" {
+variable "libvirt_external_interface" {
   type    = string
   default = "eth0"
 }
 
-variable "vm_dhcp" {
+variable "dhcp" {
   type    = bool
   default = true
 }
 
-variable "vm_ip" {
+variable "ip" {
   type    = string
   default = ""
 }
 
-variable "vm_gateway" {
+variable "gateway" {
   type    = string
   default = "" # 1.2.3.4/5
 }
 
-variable "vm_mac" {
+variable "mac" {
   type    = string
   default = null
 }
 
-variable "vm_memory" {
+variable "memory" {
   type    = number
   default = 2048
 }
 
-variable "vm_vcpu" {
+variable "vcpu" {
   type    = number
   default = 2
 }
 
-variable "vm_disk_size" {
+variable "disk_size" {
   type    = number
   default = 64424509440 # 60GB
 }
 
-variable "vm_cloudinit_image" {
+variable "cloudinit_image" {
   type    = string
   default = "https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-generic-amd64.qcow2"
 }
 
-variable "vm_spice_server_enabled" {
+variable "spice_server_enabled" {
   type    = bool
   default = false
 }
 
-variable "vm_hostname" {
+variable "hostname" {
   type    = string
   default = "libvirt_server"
 }
 
-variable "vm_domain" {
+variable "domain" {
   type    = string
   default = "example.com"
 }
