@@ -22,28 +22,28 @@ data "template_file" "cloudinit" {
   ssh_pwauth: True
   ssh_deletekeys: False
 
-  %{ if length(var.ssh_keys) > 0 }
+  %{if length(var.ssh_keys) > 0}
   ssh_authorized_keys:
-  %{ for key in var.ssh_keys }
+  %{for key in var.ssh_keys}
     - "${key}"
-  %{ endfor }
-  %{ endif }
+  %{endfor}
+  %{endif}
 
   network:
     ethernets:
       eth0:
         dhcp4: ${var.dhcp}
         dhcp6: false
-        %{ if var.dhcp == false ~}
+        %{if var.dhcp == false~}
         addresses: ["${var.ip}"]
         gateway4: ${var.gateway}
         nameservers:
-        %{ if length(var.nameservers) > 0 ~}
-        %{ for nameserver in var.nameservers ~}
+        %{if length(var.nameservers) > 0~}
+        %{for nameserver in var.nameservers~}
           - ${nameserver}
-        %{ endfor ~}
-        %{ endif ~}
-        %{ endif }
+        %{endfor~}
+        %{endif~}
+        %{endif}
 
   EOT
 }
@@ -98,7 +98,7 @@ resource "ansible_host" "default" {
   groups = concat(var.ansible_groups, [var.domain])
 
   variables = {
-    ansible_host = coalesce(var.ansible_host, "${var.ip}", "${var.hostname}.${var.domain}")
+    ansible_host = coalesce(var.ansible_host, var.ip, var.domain != "" ? "${var.hostname}.${var.domain}" : var.hostname)
     ansible_user = var.ansible_user
   }
 }

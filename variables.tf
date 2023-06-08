@@ -85,12 +85,12 @@ variable "domain" {
 
 variable "ansible_name" {
   type    = string
-  default = "${var.hostname}"
+  default = ""
 }
 
 variable "ansible_host" {
   type    = string
-  default = coalesce(var.ip, var.domain != "" ? "${var.hostname}.${var.domain}" : var.hostname)
+  default = ""
 }
 
 variable "ansible_user" {
@@ -99,7 +99,7 @@ variable "ansible_user" {
 }
 
 variable "ansible_groups" {
-  type    = list(string)
+  type = list(string)
   default = [
     "libvirt",
   ]
