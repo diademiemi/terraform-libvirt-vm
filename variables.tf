@@ -80,17 +80,22 @@ variable "hostname" {
 
 variable "domain" {
   type    = string
-  default = "example.com"
+  default = ""
 }
 
 variable "ansible_name" {
   type    = string
-  default = "libvirt_server"
+  default = "${var.hostname}"
 }
 
 variable "ansible_host" {
   type    = string
-  default = "libvirt_server.example.com"
+  default = coalesce(var.ip, var.domain != "" ? "${var.hostname}.${var.domain}" : var.hostname)
+}
+
+variable "ansible_user" {
+  type    = string
+  default = "root"
 }
 
 variable "ansible_groups" {

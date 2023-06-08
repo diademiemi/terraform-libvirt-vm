@@ -99,6 +99,6 @@ resource "ansible_host" "default" {
 
   variables = {
     ansible_host = coalesce(var.ansible_host, "${var.ip}", "${var.hostname}.${var.domain}")
-    ansible_user = "root"
+    ansible_user = var.ansible_user
   }
 }
