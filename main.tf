@@ -95,7 +95,7 @@ resource "libvirt_domain" "domain" {
 
 resource "ansible_host" "default" {
   name   = coalesce(var.ansible_name, var.hostname)
-  groups = concat(var.ansible_groups, [var.domain])
+  groups = concat(var.ansible_groups, [lower(replace(var.domain, ".", "_"))])
 
   variables = {
     ansible_host = coalesce(var.ansible_host, var.ip, var.domain != "" ? "${var.hostname}.${var.domain}" : var.hostname)
