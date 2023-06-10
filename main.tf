@@ -60,6 +60,8 @@ resource "libvirt_domain" "domain" {
   memory = var.memory
   vcpu   = var.vcpu
 
+  autostart = var.autostart
+
   cloudinit = libvirt_cloudinit_disk.init_disk.id // Attach cloud-init disk
 
   disk {

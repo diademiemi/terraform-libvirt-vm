@@ -83,6 +83,11 @@ variable "domain" {
   default = ""
 }
 
+variable "autostart" {
+  type    = bool
+  default = true
+}
+
 variable "ansible_name" {
   type    = string
   default = ""
