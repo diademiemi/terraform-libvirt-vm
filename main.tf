@@ -12,7 +12,7 @@ resource "libvirt_volume" "disk" {
   size           = var.disk_size
 }
 
-data "template_file" "cloudinit" {
+data "template_file" "cloudinit_user_data" {
   template = <<-EOT
 #cloud-config
 
@@ -21,6 +21,10 @@ fqdn: ${var.hostname}.${var.domain}
 
 ssh_pwauth: True
 ssh_deletekeys: False
+chpasswd:
+  list: |
+     root:terraform-libvirt-linux
+  expire: False
 
 %{if length(var.ssh_keys) > 0}
 ssh_authorized_keys:
@@ -29,38 +33,42 @@ ssh_authorized_keys:
 %{endfor}
 %{endif}
 
-network:
-  ethernets:
+EOT
+}
+
+data "template_file" "cloudinit_network_data" {
+  template = <<-EOT
+version: 2
+ethernets:
 %{for interface in var.network_interfaces ~}
-    ${interface.name~}:
+  ${interface.name~}:
 %{if interface.dhcp == null~}
-      dhcp4: true
+    dhcp4: true
 %{endif~}
 %{if interface.dhcp != null~}
-      dhcp4: ${interface.dhcp}
+    dhcp4: ${interface.dhcp}
 %{endif~}
-      dhcp6: false
 %{if interface.dhcp != true~}
 %{if interface.ip != null~}
-      addresses: ["${interface.ip}"]
+    addresses: ["${interface.ip}"]
 %{endif~}
 %{if interface.gateway != null~}
-      gateway4: ${interface.gateway}
+    gateway4: ${interface.gateway}
 %{endif~}
 %{if interface.nameservers != null~}
 %{if length(interface.nameservers) > 0~}
-      nameservers:
+    nameservers:
 %{for nameserver in interface.nameservers~}
-        - ${nameserver}
+      - ${nameserver}
 %{endfor~}
 %{endif~}
 %{endif~}
 %{if interface.additional_routes != null~}
 %{if length(interface.additional_routes) > 0~}
-      routes:
+    routes:
 %{for route in interface.additional_routes~}
-        - to: ${route.network}
-          via: ${route.gateway}
+      - to: ${route.network}
+        via: ${route.gateway}
 %{endfor~}
 %{endif~}
 %{endif~}
@@ -74,7 +82,8 @@ resource "libvirt_cloudinit_disk" "init_disk" {
   name = "${var.hostname}_cloudinit"
   pool = var.libvirt_pool
 
-  user_data = data.template_file.cloudinit.rendered
+  user_data = data.template_file.cloudinit_user_data.rendered
+  network_config = data.template_file.cloudinit_network_data.rendered
 }
 
 resource "libvirt_domain" "domain" {
