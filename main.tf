@@ -21,10 +21,6 @@ fqdn: ${var.hostname}.${var.domain}
 
 ssh_pwauth: True
 ssh_deletekeys: False
-chpasswd:
-  list: |
-     root:terraform-libvirt-linux
-  expire: False
 
 %{if length(var.ssh_keys) > 0}
 ssh_authorized_keys:
