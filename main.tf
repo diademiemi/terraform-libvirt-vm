@@ -14,38 +14,60 @@ resource "libvirt_volume" "disk" {
 
 data "template_file" "cloudinit" {
   template = <<-EOT
-  #cloud-config
+#cloud-config
 
-  hostname: ${var.hostname}
-  fqdn: ${var.hostname}.${var.domain}
+hostname: ${var.hostname}
+fqdn: ${var.hostname}.${var.domain}
 
-  ssh_pwauth: True
-  ssh_deletekeys: False
+ssh_pwauth: True
+ssh_deletekeys: False
 
-  %{if length(var.ssh_keys) > 0}
-  ssh_authorized_keys:
-  %{for key in var.ssh_keys}
-    - "${key}"
-  %{endfor}
-  %{endif}
+%{if length(var.ssh_keys) > 0}
+ssh_authorized_keys:
+%{for key in var.ssh_keys}
+  - "${key}"
+%{endfor}
+%{endif}
 
-  network:
-    ethernets:
-      eth0:
-        dhcp4: ${var.dhcp}
-        dhcp6: false
-        %{if var.dhcp == false~}
-        addresses: ["${var.ip}"]
-        gateway4: ${var.gateway}
-        nameservers:
-        %{if length(var.nameservers) > 0~}
-        %{for nameserver in var.nameservers~}
-          - ${nameserver}
-        %{endfor~}
-        %{endif~}
-        %{endif}
+network:
+  ethernets:
+%{for interface in var.network_interfaces ~}
+    ${interface.name~}:
+%{if interface.dhcp == null~}
+      dhcp4: true
+%{endif~}
+%{if interface.dhcp != null~}
+      dhcp4: ${interface.dhcp}
+%{endif~}
+      dhcp6: false
+%{if interface.dhcp != true~}
+%{if interface.ip != null~}
+      addresses: ["${interface.ip}"]
+%{endif~}
+%{if interface.gateway != null~}
+      gateway4: ${interface.gateway}
+%{endif~}
+%{if interface.nameservers != null~}
+%{if length(interface.nameservers) > 0~}
+      nameservers:
+%{for nameserver in interface.nameservers~}
+        - ${nameserver}
+%{endfor~}
+%{endif~}
+%{endif~}
+%{if interface.additional_routes != null~}
+%{if length(interface.additional_routes) > 0~}
+      routes:
+%{for route in interface.additional_routes~}
+        - to: ${route.network}
+          via: ${route.gateway}
+%{endfor~}
+%{endif~}
+%{endif~}
+%{endif~}
+%{endfor~}
 
-  EOT
+EOT
 }
 
 resource "libvirt_cloudinit_disk" "init_disk" {
@@ -75,11 +97,17 @@ resource "libvirt_domain" "domain" {
     }
   }
 
-  network_interface {
-    macvtap        = var.libvirt_external_interface
-    hostname       = var.hostname
-    wait_for_lease = false
-    mac            = var.mac // For some providers, this is required
+  dynamic "network_interface" {
+    for_each = var.network_interfaces
+
+    content {
+      macvtap        = network_interface.value.macvtap
+      network_name   = network_interface.value.network_name
+      network_id     = network_interface.value.network_id
+      hostname       = network_interface.value.hostname
+      wait_for_lease = network_interface.value.wait_for_lease
+      mac            = network_interface.value.mac // For some providers, this is required
+    }
   }
 
   console {
@@ -100,7 +128,7 @@ resource "ansible_host" "default" {
   groups = concat(var.ansible_groups, [lower(replace(var.domain, ".", "_"))])
 
   variables = {
-    ansible_host = coalesce(var.ansible_host, var.ip, var.domain != "" ? "${var.hostname}.${var.domain}" : var.hostname)
+    ansible_host = coalesce(var.ansible_host, var.network_interfaces[0].ip, var.domain != "" ? "${var.hostname}.${var.domain}" : var.hostname)
     ansible_user = var.ansible_user
   }
 }

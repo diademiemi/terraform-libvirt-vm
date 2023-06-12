@@ -25,27 +25,30 @@ variable "nameservers" {
 
 variable "libvirt_external_interface" {
   type    = string
-  default = "eth0"
-}
-
-variable "dhcp" {
-  type    = bool
-  default = true
-}
-
-variable "ip" {
-  type    = string
-  default = ""
-}
-
-variable "gateway" {
-  type    = string
-  default = "" # 1.2.3.4/5
-}
-
-variable "mac" {
-  type    = string
   default = null
+}
+
+variable "network_interfaces" {
+  type = list(object({
+    name = optional(string)
+    network_id = optional(string)
+    network_name = optional(string)
+    macvtap = optional(string)
+    hostname = optional(string)
+    wait_for_lease = optional(bool)
+
+    dhcp = optional(bool)
+    ip = optional(string)
+    gateway = optional(string)
+    nameservers = optional(list(string))
+    mac = optional(string)
+
+    additional_routes = optional(list(object({
+      network = string
+      gateway = string
+    })))
+  }))
+  default = []
 }
 
 variable "memory" {
