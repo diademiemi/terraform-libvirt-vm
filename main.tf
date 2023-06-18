@@ -21,10 +21,6 @@ fqdn: ${var.hostname}.${var.domain}
 
 ssh_pwauth: True
 ssh_deletekeys: False
-chpasswd:
-  list: |
-     root:terraform-libvirt-linux
-  expire: False
 
 %{if length(var.ssh_keys) > 0}
 ssh_authorized_keys:
@@ -91,6 +87,10 @@ resource "libvirt_domain" "domain" {
   memory = var.memory
   vcpu   = var.vcpu
 
+  cpu {
+    mode = "host-passthrough"
+  }
+
   autostart = var.autostart
 
   cloudinit = libvirt_cloudinit_disk.init_disk.id // Attach cloud-init disk
@@ -117,6 +117,10 @@ resource "libvirt_domain" "domain" {
       wait_for_lease = network_interface.value.wait_for_lease
       mac            = network_interface.value.mac // For some providers, this is required
     }
+  }
+
+  xml {
+    xslt = file("${path.module}/nicmodel.xsl")
   }
 
   console {
