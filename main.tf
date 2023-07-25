@@ -61,8 +61,9 @@ ethernets:
 %{if interface.nameservers != null~}
 %{if length(interface.nameservers) > 0~}
     nameservers:
+      addresses:
 %{for nameserver in interface.nameservers~}
-      - ${nameserver}
+        - ${nameserver}
 %{endfor~}
 %{endif~}
 %{endif~}
