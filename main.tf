@@ -150,5 +150,6 @@ resource "ansible_host" "default" {
   variables = {
     ansible_host = coalesce(var.ansible_host, var.network_interfaces[0].ip, var.domain != "" ? "${var.hostname}.${var.domain}" : var.hostname)
     ansible_user = var.ansible_user
+    ansible_ssh_pass = var.ansible_ssh_pass
   }
 }

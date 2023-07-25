@@ -111,6 +111,11 @@ variable "ansible_user" {
   default = "root"
 }
 
+variable "ansible_ssh_pass" {
+  type    = string
+  default = ""
+}
+
 variable "ansible_groups" {
   type = list(string)
   default = [
