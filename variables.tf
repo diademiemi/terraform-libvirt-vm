@@ -18,6 +18,11 @@ variable "password_auth" {
   default = false
 }
 
+variable "root_password" {
+  type    = string
+  default = ""
+}
+
 variable "nameservers" {
   type    = list(string)
   default = []

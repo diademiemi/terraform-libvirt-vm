@@ -71,6 +71,13 @@ ethernets:
 %{endif~}
 %{endfor~}
 
+%{if var.root_password != ""~}
+chpasswd:
+  list: |
+     root:${var.root_password}
+  expire: False
+%{endif~}
+
 EOT
 }
 
