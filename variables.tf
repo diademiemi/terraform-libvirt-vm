@@ -23,6 +23,11 @@ variable "disable_root" {
   default = true
 }
 
+variable "allow_root_ssh_pwauth" {
+  type    = bool
+  default = false
+}
+
 variable "root_password" {
   type    = string
   default = ""

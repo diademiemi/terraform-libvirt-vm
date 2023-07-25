@@ -38,6 +38,11 @@ chpasswd:
   expire: False
 %{endif~}
 
+%{if var.allow_root_ssh_pwauth != null && var.allow_root_ssh_pwauth == true}
+bootcmd:
+  - 'echo "PermitRootLogin yes" >> /etc/ssh/sshd_config.d/99-allow-root-ssh-pwauth.conf'
+
+%{endif}
 EOT
 }
 
