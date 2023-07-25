@@ -19,7 +19,7 @@ data "template_file" "cloudinit_user_data" {
 hostname: ${var.hostname}
 fqdn: ${var.hostname}.${var.domain}
 
-ssh_pwauth: True
+ssh_pwauth: ${var.password_auth}
 ssh_deletekeys: False
 
 %{if length(var.ssh_keys) > 0}
@@ -28,6 +28,13 @@ ssh_authorized_keys:
   - "${key}"
 %{endfor}
 %{endif}
+
+%{if var.root_password != ""~}
+chpasswd:
+  list: |
+     root:${var.root_password}
+  expire: False
+%{endif~}
 
 EOT
 }
@@ -70,13 +77,6 @@ ethernets:
 %{endif~}
 %{endif~}
 %{endfor~}
-
-%{if var.root_password != ""~}
-chpasswd:
-  list: |
-     root:${var.root_password}
-  expire: False
-%{endif~}
 
 EOT
 }
