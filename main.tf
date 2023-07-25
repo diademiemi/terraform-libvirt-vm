@@ -18,6 +18,7 @@ data "template_file" "cloudinit_user_data" {
 
 hostname: ${var.hostname}
 fqdn: ${var.hostname}.${var.domain}
+prefer_fqdn_over_hostname: true
 
 ssh_pwauth: ${var.password_auth}
 ssh_deletekeys: False
