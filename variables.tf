@@ -18,6 +18,11 @@ variable "password_auth" {
   default = false
 }
 
+variable "disable_root" {
+  type    = bool
+  default = true
+}
+
 variable "root_password" {
   type    = string
   default = ""

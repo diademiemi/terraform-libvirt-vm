@@ -29,6 +29,8 @@ ssh_authorized_keys:
 %{endfor}
 %{endif}
 
+disable_root: ${var.disable_root}
+
 %{if var.root_password != ""~}
 chpasswd:
   list: |
