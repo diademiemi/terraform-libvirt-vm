@@ -43,20 +43,40 @@ variable "libvirt_external_interface" {
   default = null
 }
 
+variable "cloudinit_use_user_data" {
+  type    = bool
+  default = true
+}
+
+variable "cloudinit_use_network_data" {
+  type    = bool
+  default = true
+}
+
+variable "cloudinit_custom_user_data" {
+  type    = string
+  default = ""
+}
+
+variable "cloudinit_custom_network_data" {
+  type    = string
+  default = ""
+}
+
 variable "network_interfaces" {
   type = list(object({
-    name = optional(string)
-    network_id = optional(string)
-    network_name = optional(string)
-    macvtap = optional(string)
-    hostname = optional(string)
+    name           = optional(string)
+    network_id     = optional(string)
+    network_name   = optional(string)
+    macvtap        = optional(string)
+    hostname       = optional(string)
     wait_for_lease = optional(bool)
 
-    dhcp = optional(bool)
-    ip = optional(string)
-    gateway = optional(string)
+    dhcp        = optional(bool)
+    ip          = optional(string)
+    gateway     = optional(string)
     nameservers = optional(list(string))
-    mac = optional(string)
+    mac         = optional(string)
 
     additional_routes = optional(list(object({
       network = string

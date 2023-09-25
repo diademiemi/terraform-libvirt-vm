@@ -16,6 +16,10 @@ data "template_file" "cloudinit_user_data" {
   template = <<-EOT
 #cloud-config
 
+%{if var.cloudinit_use_user_data == true~}
+
+
+# From diademiemi/terraform-libvirt-vm
 hostname: ${var.hostname}
 fqdn: ${var.hostname}.${var.domain}
 prefer_fqdn_over_hostname: true
@@ -42,16 +46,24 @@ chpasswd:
 %{if var.allow_root_ssh_pwauth != null && var.allow_root_ssh_pwauth == true}
 bootcmd:
   - 'echo "PermitRootLogin yes" >> /etc/ssh/sshd_config.d/99-allow-root-ssh-pwauth.conf'
-
 %{endif}
+
+%{endif~}
+
+# Custom cloud-init
+${coalesce(var.cloudinit_custom_user_data, "")}`
+
 EOT
+
 }
 
 data "template_file" "cloudinit_network_data" {
   template = <<-EOT
+%{if var.cloudinit_use_network_data == true~}
+
 version: 2
 ethernets:
-%{for interface in var.network_interfaces ~}
+%{for interface in var.network_interfaces~}
   ${interface.name~}:
 %{if interface.dhcp == null~}
     dhcp4: true
@@ -87,6 +99,11 @@ ethernets:
 %{endif~}
 %{endfor~}
 
+%{endif~}
+
+# Custom cloud-init
+${coalesce(var.cloudinit_custom_network_data, "")}`
+
 EOT
 }
 
@@ -94,7 +111,7 @@ resource "libvirt_cloudinit_disk" "init_disk" {
   name = "${var.hostname}_cloudinit"
   pool = var.libvirt_pool
 
-  user_data = data.template_file.cloudinit_user_data.rendered
+  user_data      = data.template_file.cloudinit_user_data.rendered
   network_config = data.template_file.cloudinit_network_data.rendered
 }
 
@@ -157,8 +174,8 @@ resource "ansible_host" "default" {
   groups = concat(var.ansible_groups, [lower(replace(var.domain, ".", "_"))])
 
   variables = {
-    ansible_host = coalesce(var.ansible_host, split("/", var.network_interfaces[0].ip).0, var.domain != "" ? "${var.hostname}.${var.domain}" : var.hostname)
-    ansible_user = var.ansible_user
+    ansible_host     = coalesce(var.ansible_host, split("/", var.network_interfaces[0].ip).0, var.domain != "" ? "${var.hostname}.${var.domain}" : var.hostname)
+    ansible_user     = var.ansible_user
     ansible_ssh_pass = var.ansible_ssh_pass
   }
 }
