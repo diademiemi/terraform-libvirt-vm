@@ -1,4 +1,5 @@
 resource "libvirt_volume" "cloudinit_image" {
+  count  = var.cloudinit_image != "" ? 1 : 0
   name   = "${var.hostname}_cloudinit_image"
   pool   = var.libvirt_pool
   source = var.cloudinit_image
@@ -8,7 +9,7 @@ resource "libvirt_volume" "cloudinit_image" {
 resource "libvirt_volume" "disk" {
   name           = "${var.hostname}_disk"
   pool           = var.libvirt_pool
-  base_volume_id = libvirt_volume.cloudinit_image.id
+  base_volume_id = try(libvirt_volume.cloudinit_image[0].id, "")
   size           = var.disk_size
 }
 
@@ -51,7 +52,7 @@ bootcmd:
 %{endif~}
 
 # Custom cloud-init
-${coalesce(var.cloudinit_custom_user_data, "")}`
+${coalesce(var.cloudinit_custom_user_data, "")}
 
 EOT
 
@@ -102,7 +103,7 @@ ethernets:
 %{endif~}
 
 # Custom cloud-init
-${coalesce(var.cloudinit_custom_network_data, "")}`
+${coalesce(var.cloudinit_custom_network_data, "")}
 
 EOT
 }
@@ -137,6 +138,24 @@ resource "libvirt_domain" "domain" {
     content {
       block_device = disk.value
     }
+  }
+
+  dynamic "disk" {
+    for_each = var.iso_urls
+    content {
+      url = disk.value
+    }
+  }
+
+  dynamic "disk" {
+    for_each = var.iso_paths
+    content {
+      file = disk.value
+    }
+  }
+
+  boot_device {
+    dev = ["hd", "cdrom", "network"]
   }
 
   dynamic "network_interface" {

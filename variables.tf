@@ -8,6 +8,16 @@ variable "disk_passthroughs" {
   default = []
 }
 
+variable "iso_urls" {
+  type    = list(string)
+  default = []
+}
+
+variable "iso_paths" {
+  type    = list(string)
+  default = []
+}
+
 variable "ssh_keys" {
   type    = list(string)
   default = []
