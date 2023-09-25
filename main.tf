@@ -174,7 +174,7 @@ resource "ansible_host" "default" {
   groups = concat(var.ansible_groups, [lower(replace(var.domain, ".", "_"))])
 
   variables = {
-    ansible_host     = coalesce(var.ansible_host, split("/", var.network_interfaces[0].ip).0, var.domain != "" ? "${var.hostname}.${var.domain}" : var.hostname)
+    ansible_host     = coalesce(var.ansible_host, try(split("/", var.network_interfaces[0].ip).0, var.domain != "" ? "${var.hostname}.${var.domain}" : var.hostname))
     ansible_user     = var.ansible_user
     ansible_ssh_pass = var.ansible_ssh_pass
   }
