@@ -149,6 +149,7 @@ variable "ansible_host" {
 variable "ansible_user" {
   type    = string
   default = "root"
+  nullable = false
 }
 
 variable "ansible_ssh_pass" {
@@ -161,4 +162,5 @@ variable "ansible_groups" {
   default = [
     "libvirt",
   ]
+  nullable = false
 }
