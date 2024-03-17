@@ -1,5 +1,5 @@
 output "primary_ipv4_address" {
-  value = try(var.network_interfaces[0].ip, "")
+  value = try(split("/", element(var.network_interfaces, 0).ip)[0], "")
 }
 
 output "server_name" {
