@@ -2,14 +2,14 @@ output "primary_ipv4_address" {
   value = try(split("/", element(var.network_interfaces, 0).ip)[0], "")
 }
 
-output "server_name" {
-  value = var.hostname
+output "name" {
+  value = var.name
 }
 
-output "server_domain" {
+output "domain" {
   value = var.domain
 }
 
-output "server_id" {
-  value = var.hostname
+output "id" {
+  value = var.name
 }

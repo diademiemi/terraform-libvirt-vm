@@ -1,13 +1,13 @@
 resource "libvirt_volume" "cloudinit_image" {
   count  = var.cloudinit_image != "" ? 1 : 0
-  name   = "${var.hostname}_cloudinit_image"
+  name   = "${var.name}_cloudinit_image"
   pool   = var.libvirt_pool
   source = var.cloudinit_image
   format = "qcow2"
 }
 
 resource "libvirt_volume" "disk" {
-  name           = "${var.hostname}_disk"
+  name           = "${var.name}_disk"
   pool           = var.libvirt_pool
   base_volume_id = try(libvirt_volume.cloudinit_image[0].id, "")
   size           = var.disk_size
@@ -21,8 +21,12 @@ data "template_file" "cloudinit_user_data" {
 
 
 # From diademiemi/terraform-libvirt-vm
-hostname: ${var.hostname}
-fqdn: ${var.hostname}.${var.domain}
+hostname: ${var.name}
+%{if var.domain != null && var.domain != ""~}
+fqdn: ${var.name}.${var.domain}
+%{else~}
+fqdn: ${var.name}
+%{endif~}
 prefer_fqdn_over_hostname: true
 
 ssh_pwauth: ${var.password_auth}
@@ -109,7 +113,7 @@ EOT
 }
 
 resource "libvirt_cloudinit_disk" "init_disk" {
-  name = "${var.hostname}_cloudinit"
+  name = "${var.name}_cloudinit"
   pool = var.libvirt_pool
 
   user_data      = data.template_file.cloudinit_user_data.rendered
@@ -117,7 +121,7 @@ resource "libvirt_cloudinit_disk" "init_disk" {
 }
 
 resource "libvirt_domain" "domain" {
-  name   = var.hostname
+  name   = var.domain != null && var.domain != "" ? "${var.name}.${var.domain}" : var.name
   memory = var.memory
   vcpu   = var.vcpu
 
@@ -183,18 +187,19 @@ resource "libvirt_domain" "domain" {
 
   graphics {
     type        = "spice"
-    listen_type = var.spice_server_enabled ? "address" : "none"
+    listen_type = var.spice_enabled ? "address" : "none"
   }
 
 }
 
 resource "ansible_host" "default" {
-  name   = coalesce(var.ansible_name, var.hostname)
-  groups = concat(var.ansible_groups, [lower(replace(var.domain, ".", "_"))])
+  name   = coalesce(var.ansible_name, var.name)
+  groups = var.ansible_groups
 
   variables = {
-    ansible_host     = coalesce(var.ansible_host, try(split("/", var.network_interfaces[0].ip).0, var.domain != "" ? "${var.hostname}.${var.domain}" : var.hostname))
-    ansible_user     = var.ansible_user
-    ansible_ssh_pass = var.ansible_ssh_pass
+    ansible_host     = coalesce(var.ansible_host, try(split("/", var.network_interfaces[0].ip).0, var.domain != null && var.domain != "" ? "${var.name}.${var.domain}" : var.name))
+    ansible_user     = coalesce(var.ansible_user, "root")
+    ansible_ssh_pass = coalesce(var.ansible_ssh_pass, var.root_password, "root")
+    ansible_ssh_private_key_file = try(var.ansible_ssh_private_key_file, "")
   }
 }
