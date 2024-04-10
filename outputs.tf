@@ -3,7 +3,7 @@ output "primary_ipv4_address" {
 }
 
 output "name" {
-  value = var.name
+  value = var.domain != null && var.domain != "" ? "${var.name}.${var.domain}" : var.name
 }
 
 output "domain" {
